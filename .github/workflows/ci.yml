@@ -1,0 +1,49 @@
+name: Testing pipeline only
+
+on:
+  push:
+    branches:
+      - main  # Trigger on push to 'main' branch
+
+jobs:
+  test:
+    runs-on: ubuntu-latest  # Use the latest Ubuntu environment
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v2  # Correct action version
+
+      # Step 2: Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v2  # Correct action version
+        with:
+          python-version: '3.8'  # Specify Python version
+
+      # Step 3: Install Python dependencies
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip  # Ensure pip is up-to-date
+          pip install -r requirements.txt  # Install Python dependencies
+
+      # Step 4: Install Cypress and run UI tests
+      - name: Install Cypress
+        run: |
+          npm install cypress  # Install Cypress for UI testing
+
+      - name: Run Cypress tests
+        uses: cypress-io/github-actions@v2  # Correct version of Cypress action
+        with:
+          build: npm install  # Install necessary dependencies
+          start: npm run start  # Start the app
+        env:
+          CYPRESS_baseUrl: http://localhost:3000  # Set base URL for Cypress tests
+        wait-on: 'http://localhost:3000'  # Wait for the app to be available
+
+      # Step 5: Upload coverage report to Codecov (optional)
+      - name: Upload coverage report to Codecov
+        uses: codecov/codecov-action@v2  # Correct Codecov action version
+        with:
+          name: coverage-report  # The name of the report
+          path: coverage.xml  # Path to the coverage report (make sure your tests generate this file)
+
